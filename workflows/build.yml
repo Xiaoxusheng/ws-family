@@ -1,0 +1,42 @@
+name: Build Go binaries
+
+on:
+  push:
+    branches:
+      - master  # 或者你想要触发构建的其他分支
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [linux, windows, darwin]  # 支持的操作系统
+        arch: [amd64, arm64]           # 支持的架构
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.20'  # 使用你需要的 Go 版本
+
+      - name: Build
+        run: |
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o myapp_${{ matrix.os }}_${{ matrix.arch }} main.go
+        env:
+          GO111MODULE: 'on'
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          path: |
+            myapp_linux_amd64
+            myapp_linux_arm64
+            myapp_windows_amd64.exe
+            myapp_darwin_amd64
+            myapp_darwin_arm64
+
